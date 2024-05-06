@@ -33,8 +33,8 @@ ekf_filter_node:
         world_frame: odom           # Defaults to the value ofodom_frame if unspecified
 
         odom0: omnidirectional_controller/odom
-        odom0_config: [true,  true,  true,
+        odom0_config: [true,  true,  false,
                        false, false, false,
                        false, false, false,
-                       false, false, true,
-                       false, false, false]
+                       false, false, false,
+                       false, false, true]

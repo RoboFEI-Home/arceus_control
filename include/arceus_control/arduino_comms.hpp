@@ -54,10 +54,10 @@ public:
   }
 
 
-  std::string send_msg(const std::string &msg_to_send, bool print_output = true)
+  std::string send_msg(const bytes file, bool print_output = false)
   {
     serial_conn_.FlushIOBuffers(); // Just in case
-    serial_conn_.Write(msg_to_send);
+    serial_conn_.Write(file);
 
     std::string response = "";
     try
@@ -102,10 +102,10 @@ public:
   }
   void set_motor_values(double val_1, double val_2, double val_3)
   {
-    std::stringstream ss;
+    /* std::stringstream ss;
     ss << val_1 << " " << val_2 << " " << val_3 << "\r";
     std::clog << "Sent: " << val_1  << " " << val_2 << " " << val_3 << std::endl;
-    send_msg(ss.str());
+    send_msg(ss.str()); */
   }
 
   void set_pid_values(int k_p, int k_d, int k_i, int k_o)
