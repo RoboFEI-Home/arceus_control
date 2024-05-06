@@ -21,6 +21,7 @@
 #include <memory>
 #include <vector>
 #include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 #include "hardware_interface/lexical_casts.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
@@ -145,7 +146,6 @@ hardware_interface::CallbackReturn ArceusOmniSystemHardware::on_activate(
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
   RCLCPP_INFO(rclcpp::get_logger("ArceusOmniSystemHardware"), "Activating ...please wait...");
   comms_.connect(cfg_.device, cfg_.baud_rate, cfg_.timeout_ms);
-  json j;
   RCLCPP_INFO(rclcpp::get_logger("ArceusOmniSystemHardware"), "Successfully activated!");
 
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -185,8 +185,10 @@ hardware_interface::return_type ArceusOmniSystemHardware::read(
 hardware_interface::return_type arceus_omnidirectional_system::ArceusOmniSystemHardware::write(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  j[motors] = json.dump({wheel_1_.cmd, wheel_2_.cmd, wheel_3_.cmd});
-  comms_.send_msg(j);
+  json j;
+  j["motors"] = {wheel_1_.cmd, wheel_2_.cmd, wheel_3_.cmd};
+  std::string data = j.dump();
+  comms_.send_msg(data);
 
   return hardware_interface::return_type::OK;
 }
