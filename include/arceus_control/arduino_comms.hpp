@@ -6,6 +6,8 @@
 // #include <cstdlib>
 #include <libserial/SerialPort.h>
 #include <iostream>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 
 LibSerial::BaudRate convert_baud_rate(int baud_rate)
@@ -54,52 +56,54 @@ public:
   }
 
 
-  std::string send_msg(const std::string &msg_to_send, bool print_output = false)
+  void send_msg(const std::string &msg_to_send, bool print_output = true)
   {
     serial_conn_.FlushIOBuffers(); // Just in case
     serial_conn_.Write(msg_to_send);
 
+    if (print_output)
+    {
+      std::clog << "Sent: " << msg_to_send <<  std::endl;
+    }
+  }
+
+
+  //void send_empty_msg()
+  //{
+  //  std::string response = send_msg("\r");
+  //}
+
+  void read_encoder_values(int &val_1, int &val_2, int &val_3, bool print_output = false)
+  {
     std::string response = "";
     try
     {
       // Responses end with \r\n so we will read up to (and including) the \n.
-      serial_conn_.ReadLine(response, '\n', timeout_ms_);
+      serial_conn_.ReadLine(response, '}', timeout_ms_);
     }
     catch (const LibSerial::ReadTimeout&)
     {
         std::cerr << "The ReadByte() call has timed out." << std::endl ;
     }
 
-    if (print_output)
+    json jencoders;
+
+    try
     {
-      std::cout << "Sent: " << msg_to_send << " Recv: " << response << std::endl;
+      jencoders = json::parse(response);
+      val_1 = jencoders["encoders"][0];
+      val_2 = jencoders["encoders"][1];
+      val_3 = jencoders["encoders"][2];
+      if(print_output){
+        std::clog << "Received: " << val_1  << " " << val_2 << " " << val_3 << std::endl;
+      }
     }
-
-    return response;
+    catch (const json::parse_error& e)
+    {
+      std::cerr << "Parse error: " << e.what();
+    }
   }
-
-
-  void send_empty_msg()
-  {
-    std::string response = send_msg("\r");
-  }
-
-  void read_encoder_values(int &val_1, int &val_2, int &val_3)
-  {
-    std::string response = send_msg("e\r");
-
-    std::string delimiter = " ";
-    size_t del_pos = response.find(delimiter);
-    std::string token_1 = response.substr(0, del_pos);
-    response.erase(response.begin(), response.begin() + del_pos + 1);
-    std::string token_2 = response.substr(0, del_pos);
-    std::string token_3 = response.substr(del_pos + delimiter.length());
-
-    val_1 = std::atoi(token_1.c_str());
-    val_2 = std::atoi(token_2.c_str());
-    val_3 = std::atoi(token_3.c_str());
-    std::clog << "Received: " << val_1  << " " << val_2 << " " << val_3 << std::endl;
-  }
+  
   void set_motor_values(double val_1, double val_2, double val_3)
   {
     std::stringstream ss;
