@@ -27,7 +27,7 @@ class Wheel
     void setup(const std::string &wheel_name, int pulses_per_rev)
     {
       name = wheel_name;
-      inches_per_pulse = (pulses_per_rev/1000)/(2*M_PI*2.5591);
+      inches_per_pulse = pulses_per_rev/(2*M_PI*2.75591);
     }
 
     double calc_enc_angle()
