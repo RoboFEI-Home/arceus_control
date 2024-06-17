@@ -78,7 +78,7 @@ public:
     std::string response = "";
     try
     {
-      // Responses end with \r\n so we will read up to (and including) the \n.
+      // Responses end with '}' so we will read up to (and including) the '}'.
       serial_conn_.ReadLine(response, '}', timeout_ms_);
     }
     catch (const LibSerial::ReadTimeout&)
@@ -91,9 +91,9 @@ public:
     try
     {
       jencoders = json::parse(response);
-      val_1 = jencoders["encoders"][0];
+      val_1 = jencoders["encoders"][2];
       val_2 = jencoders["encoders"][1];
-      val_3 = jencoders["encoders"][2];
+      val_3 = jencoders["encoders"][0];
       if(print_output){
         std::clog << "Received: " << val_1  << " " << val_2 << " " << val_3 << std::endl;
       }
