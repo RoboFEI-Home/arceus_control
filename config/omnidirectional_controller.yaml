@@ -1,7 +1,7 @@
 controller_manager:
   ros__parameters:
     update_rate: 50  # Hz
-    use_sim_time: false
+    use_sim_time: true
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
@@ -12,9 +12,9 @@ controller_manager:
 omnidirectional_controller:
   ros__parameters:
     wheel_names: 
-      - wheel1_joint
-      - wheel2_joint
-      - wheel3_joint
+      - wheel_1_joint
+      - wheel_2_joint
+      - wheel_3_joint
 
     robot_radius: 0.2125
     wheel_radius: 0.07
