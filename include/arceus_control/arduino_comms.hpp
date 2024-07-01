@@ -56,15 +56,30 @@ public:
   }
 
 
-  void send_msg(const std::string &msg_to_send, bool print_output = true)
+  void send_msg(const std::string &msg_to_send, bool print_output = false)
   {
     serial_conn_.FlushIOBuffers(); // Just in case
     serial_conn_.Write(msg_to_send);
 
-    if (print_output)
-    {
-      std::clog << "Sent: " << msg_to_send <<  std::endl;
-    }
+
+    if (print_output){
+      std::string response = "";
+      try
+      { 
+        // Responses end with \r\n so we will read up to (and including) the \n.
+        serial_conn_.ReadLine(response, '\n', timeout_ms_);
+      }
+      catch (const LibSerial::ReadTimeout&)
+      {
+          std::cerr << "The ReadByte() call has timed out." << std::endl ;
+      }
+      
+      std::clog << "Sent: " << msg_to_send << std::endl;
+      std::clog << "Received: " << response << std::endl;
+        
+    } 
+
+    //return response;
   }
 
 
@@ -73,7 +88,7 @@ public:
   //  std::string response = send_msg("\r");
   //}
 
-  void read_encoder_values(int &val_1, int &val_2, int &val_3, bool print_output = true)
+  void read_encoder_values(int &val_1, int &val_2, int &val_3, bool print_output = false)
   {
     std::string response = "";
     try

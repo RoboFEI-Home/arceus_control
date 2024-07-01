@@ -38,3 +38,11 @@ ekf_filter_node:
                        true, true, false,
                        false, false, true,
                        false, false, false]
+
+        #Lidar data from slam or nav2
+        odom1: /pose
+        odom1_config: [true,  true,  true,
+                       true, true, true,
+                       false, false, false,
+                       false, false, false,
+                       false, false, false]

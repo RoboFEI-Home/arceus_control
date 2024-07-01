@@ -188,7 +188,9 @@ hardware_interface::return_type arceus_omnidirectional_system::ArceusOmniSystemH
   json j;
   j["motors"] = {wheel_1_.cmd, wheel_2_.cmd, wheel_3_.cmd};
   std::string data = j.dump();
+  data = data + "\n";
   comms_.send_msg(data);
+  //comms_.set_motor_values(wheel_1_.cmd, wheel_2_.cmd, wheel_3_.cmd);
 
   return hardware_interface::return_type::OK;
 }
