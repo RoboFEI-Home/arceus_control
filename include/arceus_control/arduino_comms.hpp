@@ -73,7 +73,7 @@ public:
   //  std::string response = send_msg("\r");
   //}
 
-  void read_encoder_values(int &val_1, int &val_2, int &val_3, bool print_output = false)
+  void read_encoder_values(int &val_1, int &val_2, int &val_3, bool print_output = true)
   {
     std::string response = "";
     try
@@ -86,14 +86,14 @@ public:
         std::cerr << "The ReadByte() call has timed out." << std::endl ;
     }
 
-    json jencoders;
+    json state;
 
     try
-    {
-      jencoders = json::parse(response);
-      val_1 = jencoders["encoders"][2];
-      val_2 = jencoders["encoders"][1];
-      val_3 = jencoders["encoders"][0];
+    { 
+      state = json::parse(response);
+      val_1 = state["encoders"][2];
+      val_2 = state["encoders"][1];
+      val_3 = state["encoders"][0];
       if(print_output){
         std::clog << "Received: " << val_1  << " " << val_2 << " " << val_3 << std::endl;
       }
