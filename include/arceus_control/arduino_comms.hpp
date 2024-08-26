@@ -6,6 +6,7 @@
 // #include <cstdlib>
 #include <libserial/SerialPort.h>
 #include <iostream>
+#include <fstream>
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
@@ -79,16 +80,16 @@ public:
         
     } 
 
-    //return response;
+    // return response;
   }
 
 
-  //void send_empty_msg()
-  //{
-  //  std::string response = send_msg("\r");
-  //}
+  // void send_empty_msg()
+  // {
+  //   std::string response = send_msg("\r");
+  // }
 
-  void read_encoder_values(int &val_1, int &val_2, int &val_3, bool print_output = false)
+  void read_state(int &en_val_1, int &en_val_2, int &en_val_3, bool print_output)
   {
     std::string response = "";
     try
@@ -106,11 +107,18 @@ public:
     try
     { 
       state = json::parse(response);
-      val_1 = state["encoders"][2];
-      val_2 = state["encoders"][1];
-      val_3 = state["encoders"][0];
+      en_val_1 = state["encoders"][2];
+      en_val_2 = state["encoders"][1];
+      en_val_3 = state["encoders"][0];
+      us_val_1 = state["encoders"][3];
+
+      output.open("data.json");
+      j["data"]=us_val_1;
+      output << j.dump(4);
+      output.close();
+
       if(print_output){
-        std::clog << "Received: " << val_1  << " " << val_2 << " " << val_3 << std::endl;
+        std::clog << "Received: " << en_val_1  << " " << en_val_2 << " " << en_val_3 << " " << us_val_1  << std::endl;
       }
     }
     catch (const json::parse_error& e)
@@ -118,7 +126,6 @@ public:
       std::cerr << "Parse error: " << e.what();
     }
   }
-  
   void set_motor_values(double val_1, double val_2, double val_3)
   {
     std::stringstream ss;
@@ -137,6 +144,10 @@ public:
 private:
     LibSerial::SerialPort serial_conn_;
     int timeout_ms_;
+    int us_val_1;
+    std::ofstream output;
+    json j;;
+
 };
 
 #endif // DIFFDRIVE_ARDUINO_ARDUINO_COMMS_HPP

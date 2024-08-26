@@ -15,6 +15,9 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(rclcpp REQUIRED)
+
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
@@ -46,10 +49,18 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE "ARCEUS_CONTROL_BUILDING_DLL"
 pluginlib_export_plugin_description_file(hardware_interface arceus_omni.xml)
 
 
+add_executable(range_publisher arceus_publisher.cpp)
+ament_target_dependencies(range_publisher rclcpp sensor_msgs)
+
+
 install(
   TARGETS arceus_control
   DESTINATION lib
 )
+
+install(TARGETS
+  range_publisher
+  DESTINATION lib/${PROJECT_NAME})
 
 
 install(

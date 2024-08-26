@@ -20,12 +20,14 @@
 #include <limits>
 #include <memory>
 #include <vector>
+#include <fstream>
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
 #include "hardware_interface/lexical_casts.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/range.hpp"
 
 namespace arceus_omnidirectional_system
 {
@@ -51,6 +53,10 @@ hardware_interface::CallbackReturn ArceusOmniSystemHardware::on_init(
   wheel_1_.setup(cfg_.wheel1_name, cfg_.enc_pulses_per_rev);
   wheel_2_.setup(cfg_.wheel2_name, cfg_.enc_pulses_per_rev);
   wheel_3_.setup(cfg_.wheel3_name, cfg_.enc_pulses_per_rev);
+
+  us_1_.setup("us_1_");
+  us_1_.setup("us_2_");
+  us_1_.setup("us_3_");
 
   for (const hardware_interface::ComponentInfo & joint : info_.joints)
   {
@@ -156,7 +162,7 @@ hardware_interface::CallbackReturn ArceusOmniSystemHardware::on_deactivate(
 {
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
   RCLCPP_INFO(rclcpp::get_logger("ArceusOmniSystemHardware"), "Deactivating ...please wait...");
-  comms_.disconnect();  
+  comms_.disconnect();
   RCLCPP_INFO(rclcpp::get_logger("ArceusOmniSystemHardware"), "Successfully deactivated!");
 
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -165,7 +171,7 @@ hardware_interface::CallbackReturn ArceusOmniSystemHardware::on_deactivate(
 hardware_interface::return_type ArceusOmniSystemHardware::read(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & period)
 {
-  comms_.read_encoder_values(wheel_1_.enc, wheel_2_.enc, wheel_3_.enc);  
+  comms_.read_state(wheel_1_.enc, wheel_2_.enc, wheel_3_.enc, false);  
 
   float pos_prev = wheel_1_.pos;
   wheel_1_.pos = wheel_1_.calc_enc_angle();
@@ -177,8 +183,8 @@ hardware_interface::return_type ArceusOmniSystemHardware::read(
 
   pos_prev = wheel_3_.pos;
   wheel_3_.pos = wheel_3_.calc_enc_angle();
-  wheel_3_.vel = (wheel_3_.pos + pos_prev) / period.seconds(); 
-
+  wheel_3_.vel = (wheel_3_.pos + pos_prev) / period.seconds();
+  
   return hardware_interface::return_type::OK;
 }
 
