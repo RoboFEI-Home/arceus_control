@@ -54,10 +54,6 @@ hardware_interface::CallbackReturn ArceusOmniSystemHardware::on_init(
   wheel_2_.setup(cfg_.wheel2_name, cfg_.enc_pulses_per_rev);
   wheel_3_.setup(cfg_.wheel3_name, cfg_.enc_pulses_per_rev);
 
-  us_1_.setup("us_1_");
-  us_1_.setup("us_2_");
-  us_1_.setup("us_3_");
-
   for (const hardware_interface::ComponentInfo & joint : info_.joints)
   {
     // DiffBotSystem has exactly two states and one command interface on each joint
