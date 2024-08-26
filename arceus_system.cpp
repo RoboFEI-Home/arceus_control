@@ -20,10 +20,14 @@
 #include <limits>
 #include <memory>
 #include <vector>
+#include <fstream>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 #include "hardware_interface/lexical_casts.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/range.hpp"
 
 namespace arceus_omnidirectional_system
 {
@@ -49,6 +53,10 @@ hardware_interface::CallbackReturn ArceusOmniSystemHardware::on_init(
   wheel_1_.setup(cfg_.wheel1_name, cfg_.enc_pulses_per_rev);
   wheel_2_.setup(cfg_.wheel2_name, cfg_.enc_pulses_per_rev);
   wheel_3_.setup(cfg_.wheel3_name, cfg_.enc_pulses_per_rev);
+
+  us_1_.setup("us_1_");
+  us_1_.setup("us_2_");
+  us_1_.setup("us_3_");
 
   for (const hardware_interface::ComponentInfo & joint : info_.joints)
   {
@@ -154,7 +162,7 @@ hardware_interface::CallbackReturn ArceusOmniSystemHardware::on_deactivate(
 {
   // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
   RCLCPP_INFO(rclcpp::get_logger("ArceusOmniSystemHardware"), "Deactivating ...please wait...");
-  comms_.disconnect();  
+  comms_.disconnect();
   RCLCPP_INFO(rclcpp::get_logger("ArceusOmniSystemHardware"), "Successfully deactivated!");
 
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -163,7 +171,7 @@ hardware_interface::CallbackReturn ArceusOmniSystemHardware::on_deactivate(
 hardware_interface::return_type ArceusOmniSystemHardware::read(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & period)
 {
-  comms_.read_encoder_values(wheel_1_.enc, wheel_2_.enc, wheel_3_.enc);  
+  comms_.read_state(wheel_1_.enc, wheel_2_.enc, wheel_3_.enc, false);  
 
   float pos_prev = wheel_1_.pos;
   wheel_1_.pos = wheel_1_.calc_enc_angle();
@@ -175,21 +183,20 @@ hardware_interface::return_type ArceusOmniSystemHardware::read(
 
   pos_prev = wheel_3_.pos;
   wheel_3_.pos = wheel_3_.calc_enc_angle();
-  wheel_3_.vel = (wheel_3_.pos + pos_prev) / period.seconds(); 
-
+  wheel_3_.vel = (wheel_3_.pos + pos_prev) / period.seconds();
+  
   return hardware_interface::return_type::OK;
 }
 
 hardware_interface::return_type arceus_omnidirectional_system::ArceusOmniSystemHardware::write(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  //auto debuginho1 = (std::ostringstream() << "Wheel1Joint: " << wheel_1_.cmd).str();
-  //auto debuginho2 = (std::ostringstream() << "Wheel2Joint: " << wheel_2_.cmd).str();
-  //auto debuginho3 = (std::ostringstream() << "Wheel3Joint: " << wheel_3_.cmd).str();
-  //RCLCPP_INFO(rclcpp::get_logger("ArceusOmniSystemHardware"), debuginho1.c_str());
-  //RCLCPP_INFO(rclcpp::get_logger("ArceusOmniSystemHardware"), debuginho2.c_str());
-  //RCLCPP_INFO(rclcpp::get_logger("ArceusOmniSystemHardware"), debuginho3.c_str());
-  comms_.set_motor_values(wheel_1_.cmd, wheel_2_.cmd, wheel_3_.cmd);
+  json j;
+  j["motors"] = {wheel_1_.cmd, wheel_2_.cmd, wheel_3_.cmd};
+  std::string data = j.dump();
+  data = data + "\n";
+  comms_.send_msg(data);
+  //comms_.set_motor_values(wheel_1_.cmd, wheel_2_.cmd, wheel_3_.cmd);
 
   return hardware_interface::return_type::OK;
 }
